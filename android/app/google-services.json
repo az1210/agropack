@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "214774081069",
+    "project_id": "agropack-f3787",
+    "storage_bucket": "agropack-f3787.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:214774081069:android:e990e99c7172a669597aa4",
+        "android_client_info": {
+          "package_name": "com.example.agro_packaging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFWymA9dNjrfrDEulVoTZMBf_lqyj9qdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
