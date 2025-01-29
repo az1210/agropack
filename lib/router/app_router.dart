@@ -87,6 +87,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/quotation_model.dart';
 import './router_refresh_provider.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../presentation/splash_screen.dart';
@@ -95,6 +96,8 @@ import '../features/home/presentation/admin_home_screen.dart';
 import '../features/home/presentation/sales_home_screen.dart';
 import '../features/home/presentation/unknown_role_screen.dart';
 import '../features/quotations/presentation/create_quotation_screen.dart';
+import '../features/home/presentation/quotation_admin_screen.dart';
+import '../features/home/presentation/edit_quotation_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateChangesProvider).maybeWhen(
@@ -135,6 +138,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/adminHome',
         name: 'adminHome',
         builder: (context, state) => const AdminHomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'approvQuotation',
+            name: 'approvQuotation',
+            builder: (context, state) => const QuotationAdminScreen(),
+          ),
+          GoRoute(
+            path: 'editQuotation/:id',
+            name: 'editQuotation',
+            builder: (context, state) {
+              final quotation = state.extra as Quotation;
+              return EditQuotationScreen(quotation: quotation);
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/unknownRole',

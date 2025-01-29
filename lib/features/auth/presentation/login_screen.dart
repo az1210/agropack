@@ -102,8 +102,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authRepo = ref.watch(authRepositoryProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -113,6 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextField(
                     controller: _emailController,
@@ -128,18 +127,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        setState(() {
+                          _errorMessage = 'Please fill in all fields.';
+                        });
+                        return;
+                      }
+
                       setState(() {
                         _isLoading = true;
                         _errorMessage = '';
                       });
+
                       try {
-                        // await authRepo.signInWithEmailAndPassword(
-                        //   _emailController.text.trim(),
-                        //   _passwordController.text.trim(),
-                        // );
-                      } on Exception catch (e) {
+                        await ref.read(signInProvider(
+                            {'email': email, 'password': password}).future);
+
+                        // Navigate based on role or home page.
+                        if (context.mounted) {
+                          // Replace with your desired navigation logic.
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Login successful!')),
+                          );
+                        }
+                      } catch (e) {
                         setState(() {
-                          _errorMessage = e.toString();
+                          _errorMessage = 'Login failed: ${e.toString()}';
                         });
                       } finally {
                         setState(() {

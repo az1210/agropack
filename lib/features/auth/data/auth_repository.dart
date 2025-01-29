@@ -38,7 +38,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../models/user.dart';
 import '../../../models/auth_state_model.dart';
-// import '../providers/user.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -47,20 +46,25 @@ class AuthRepository {
   /// Hardcoded users (for initial login).
   final List<UserModel> _hardcodedUsers = [
     UserModel(
-        id: 'admin001',
-        email: 'admin@example.com',
-        name: 'Admin User',
-        role: 'admin',
-        password: '123456',
-        phone: '01732688904'),
+      id: 'admin001',
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin',
+      password: '123456',
+      phone: '01732688904',
+    ),
     UserModel(
-        id: 'sales001',
-        email: 'sales@example.com',
-        name: 'Sales Executive',
-        role: 'sales',
-        password: '123456',
-        phone: '01732688904'),
+      id: 'sales001',
+      email: 'sales@example.com',
+      name: 'Sales Executive',
+      role: 'sales',
+      password: '123456',
+      phone: '01732688904',
+    ),
   ];
+
+  /// Public getter for hardcoded users
+  List<UserModel> get hardcodedUsers => _hardcodedUsers;
 
   /// Stream to listen for auth state changes.
   Stream<AuthStateModel> get authStateChanges {
@@ -68,17 +72,24 @@ class AuthRepository {
       if (user == null) {
         return AuthStateModel(currentUser: null, currentUserRole: null);
       }
+
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (!userDoc.exists) {
+        throw Exception('User not found in Firestore');
+      }
+
       final userRole = userDoc.data()?['role'] as String?;
       return AuthStateModel(currentUser: user, currentUserRole: userRole);
     });
   }
 
   /// Authenticate with hardcoded users.
-  Future<UserModel?> authenticateWithHardcodedUsers(String email) async {
+  Future<UserModel?> authenticateWithHardcodedUsers(
+      String email, String password) async {
     return _hardcodedUsers.firstWhere(
-      (user) => user.email == email,
-      orElse: () => throw Exception('Invalid email'),
+      (user) => user.email == email && user.password == password,
+      orElse: () => throw Exception('Invalid email or password'),
     );
   }
 
@@ -88,9 +99,24 @@ class AuthRepository {
     await userRef.set(user.toMap());
   }
 
+  Future<void> createUser(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.id).set(user.toMap());
+    } catch (e) {
+      throw Exception('Error creating user: $e');
+    }
+  }
+
+  /// Seed the hardcoded users in Firestore
+  Future<void> seedHardcodedUsers() async {
+    for (final user in _hardcodedUsers) {
+      await createUser(user);
+    }
+  }
+
   /// Sign in using email and role.
-  Future<void> signIn(String email) async {
-    final user = await authenticateWithHardcodedUsers(email);
+  Future<void> signIn(String email, String password) async {
+    final user = await authenticateWithHardcodedUsers(email, password);
     if (user != null) {
       // Use Firebase Anonymous Auth for the session.
       final authUser = await _auth.signInAnonymously();
@@ -98,12 +124,13 @@ class AuthRepository {
 
       if (firebaseUser != null) {
         final userModel = UserModel(
-            id: firebaseUser.uid,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            password: user.password,
-            phone: user.phone);
+          id: firebaseUser.uid,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          password: user.password,
+          phone: user.phone,
+        );
 
         // Save to Firestore.
         await saveUserToFirestore(userModel);

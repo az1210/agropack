@@ -23,19 +23,19 @@ class UserModel {
       'email': email,
       'role': role,
       'name': name,
+      'password': password,
       'phone': phone,
-      'password': password, // Save plaintext password
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'],
-      email: map['email'],
-      role: map['role'],
-      name: map['name'],
-      phone: map['phone'],
-      password: map['password'], // Retrieve plaintext password
+      id: map['id'] ?? '',
+      email: map['email'] ?? '',
+      name: map['name'] ?? '',
+      role: map['role'] ?? '',
+      password: map['password'] ?? '', // Add password field
+      phone: map['phone'] ?? '',
     );
   }
 }

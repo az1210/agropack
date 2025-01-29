@@ -33,6 +33,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import './push_notification_service.dart';
 
 import 'router/app_router.dart';
 
@@ -42,7 +43,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  await initFirebaseMessaging();
   runApp(const ProviderScope(child: MyApp()));
 }
 
