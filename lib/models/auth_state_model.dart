@@ -1,26 +1,26 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../../models/user.dart';
 
 class AuthStateModel {
-  final User? currentUser;
+  final UserModel? currentUser; // Now using our custom UserModel.
   final String? currentUserRole;
 
   AuthStateModel({this.currentUser, this.currentUserRole});
 
-  /// Factory constructor for creating an empty state.
+  /// Factory constructor for creating an empty authentication state.
   factory AuthStateModel.empty() {
     return AuthStateModel(currentUser: null, currentUserRole: null);
   }
 
-  /// Check if the user is authenticated.
+  /// Returns true if a user is currently authenticated.
   bool get isAuthenticated => currentUser != null;
 
-  /// Check if the user has a specific role.
+  /// Checks whether the current user has the specified role.
   bool hasRole(String role) {
     return currentUserRole == role;
   }
 
   @override
   String toString() {
-    return 'AuthStateModel(currentUser: $currentUser, currentUserRole: $currentUserRole)';
+    return 'AuthStateModel(currentUser: ${currentUser?.id ?? "null"}, currentUserRole: $currentUserRole)';
   }
 }

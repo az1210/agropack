@@ -16,11 +16,11 @@ final notificationCountProvider = StreamProvider<int>((ref) {
 });
 
 class AdminHomeScreen extends ConsumerWidget {
-  const AdminHomeScreen({Key? key}) : super(key: key);
+  const AdminHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authRepo = ref.watch(authRepositoryProvider);
+    final authRepo = ref.watch(customAuthRepositoryProvider);
 
     // Example: Watch a stream of unread/pending notification counts.
     final notificationCount = ref.watch(notificationCountProvider).maybeWhen(
@@ -103,13 +103,14 @@ class AdminHomeScreen extends ConsumerWidget {
               title: 'Create Account',
               icon: Icons.person_add_alt_1,
               onTap: () {
-                // 6. Account Creation for Sales Executive or others
+                context.goNamed('createUser');
               },
             ),
             Center(
               child: TextButton(
                   onPressed: () async {
-                    await authRepo.signOut();
+                    await signOutUser(ref);
+                    context.goNamed('login');
                   },
                   child: Text('SignOut')),
             ),

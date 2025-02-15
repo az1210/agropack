@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/quotation_model.dart';
-import '../../quotations/providers/quotation_provider.dart';
+import '../../sales/providers/quotation_provider.dart';
 
 class EditQuotationScreen extends ConsumerStatefulWidget {
   final Quotation quotation;
