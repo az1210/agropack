@@ -24,8 +24,8 @@ class _EditQuotationScreenState extends ConsumerState<EditQuotationScreen> {
     super.initState();
     _companyNameCtrl =
         TextEditingController(text: widget.quotation.companyName);
-    _productNameCtrl =
-        TextEditingController(text: widget.quotation.productName);
+    // _productNameCtrl =
+    //     TextEditingController(text: widget.quotation.productName);
     // ... initialize other fields similarly
   }
 
@@ -61,7 +61,7 @@ class _EditQuotationScreenState extends ConsumerState<EditQuotationScreen> {
                         // Update Quotation
                         final updated = widget.quotation.copyWith(
                           companyName: _companyNameCtrl.text.trim(),
-                          productName: _productNameCtrl.text.trim(),
+                          // productName: _productNameCtrl.text.trim(),
                           // ... other fields
                         );
                         await controller.updateQuotation(updated);

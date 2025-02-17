@@ -34,8 +34,8 @@
 //     }
 //   }
 
+//   /// Fetch quotations created by the given user.
 //   Future<List<Quotation>> fetchQuotationsForUser(String createdByUid) async {
-//     // Defer setting isLoading to true until after the build frame.
 //     Future.microtask(() {
 //       isLoading = true;
 //       notifyListeners();
@@ -142,6 +142,30 @@
 //       notifyListeners();
 //     }
 //   }
+
+//   /// Delete a quotation created by a sales user if its status is not approved.
+//   Future<void> deleteQuotation(Quotation quotation) async {
+//     if (quotation.id == null) {
+//       throw Exception('Quotation has no ID to delete');
+//     }
+//     // Check if quotation status is approved.
+//     if (quotation.status == 'approved') {
+//       throw Exception('Approved quotations cannot be deleted by sales users.');
+//     }
+//     try {
+//       isLoading = true;
+//       errorMessage = '';
+//       notifyListeners();
+
+//       await _firestore.collection('quotations').doc(quotation.id).delete();
+//     } catch (e) {
+//       errorMessage = e.toString();
+//       throw Exception(errorMessage);
+//     } finally {
+//       isLoading = false;
+//       notifyListeners();
+//     }
+//   }
 // }
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -160,6 +184,9 @@ class QuotationController extends ChangeNotifier {
   String errorMessage = '';
 
   /// Create a new quotation in Firestore.
+  /// The quotation object is expected to have:
+  /// - Required: companyName and a list of items (each with its own productName, itemId, etc.)
+  /// - Optional: createdByUid, status, createdAt
   Future<void> createQuotation(
       Quotation quotation, BuildContext context) async {
     try {
@@ -167,10 +194,11 @@ class QuotationController extends ChangeNotifier {
       errorMessage = '';
       notifyListeners();
 
+      // Generate a new document and set its data using the model's toMap.
       final docRef = _firestore.collection('quotations').doc();
-      // Optionally, assign the generated document id to quotation if needed.
       await docRef.set(quotation.toMap());
 
+      // Optionally, you could update the quotation instance with docRef.id if needed.
       Navigator.of(context).pop();
     } catch (e) {
       errorMessage = e.toString();
@@ -180,13 +208,13 @@ class QuotationController extends ChangeNotifier {
     }
   }
 
-  /// Fetch quotations created by the given user.
+  /// Fetch quotations created by a specific user (for sales users).
   Future<List<Quotation>> fetchQuotationsForUser(String createdByUid) async {
+    // Defer state update until after the build frame.
     Future.microtask(() {
       isLoading = true;
       notifyListeners();
     });
-
     try {
       final snapshot = await _firestore
           .collection('quotations')
@@ -207,7 +235,7 @@ class QuotationController extends ChangeNotifier {
     }
   }
 
-  /// Fetch all quotations (for admin).
+  /// Fetch all quotations (for admin users).
   Future<List<Quotation>> fetchAllQuotations() async {
     try {
       isLoading = true;
@@ -268,7 +296,7 @@ class QuotationController extends ChangeNotifier {
     }
   }
 
-  /// Confirm an order for a quotation (for sales).
+  /// Confirm an order for a quotation (for sales users).
   Future<void> confirmOrder(Quotation quotation) async {
     if (quotation.id == null) {
       throw Exception('Quotation has no ID to confirm');
@@ -294,7 +322,7 @@ class QuotationController extends ChangeNotifier {
     if (quotation.id == null) {
       throw Exception('Quotation has no ID to delete');
     }
-    // Check if quotation status is approved.
+    // Check if the quotation's status is approved. If yes, sales users should not delete it.
     if (quotation.status == 'approved') {
       throw Exception('Approved quotations cannot be deleted by sales users.');
     }

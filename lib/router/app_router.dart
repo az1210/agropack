@@ -1,3 +1,5 @@
+import 'package:agro_packaging/features/sales/presentation/order_detail_screen.dart';
+import 'package:agro_packaging/features/sales/presentation/orders_screen.dart';
 import 'package:agro_packaging/features/sales/presentation/quotation_detail_screen.dart';
 import 'package:agro_packaging/features/sales/presentation/quotations_screen.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +70,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (BuildContext context, GoRouterState state) {
               final quotation = state.extra as Quotation;
               return QuotationDetailScreen(quotation: quotation);
+            },
+          ),
+          GoRoute(
+            path: 'orders',
+            name: 'orders',
+            builder: (BuildContext context, GoRouterState state) =>
+                const OrdersScreen(),
+          ),
+          GoRoute(
+            path: '/salesHome/ordersDetail/:id',
+            name: 'orderDetail',
+            builder: (context, state) {
+              // Cast extra to Map<String, dynamic> instead of Quotation.
+              final orderData = state.extra as Map<String, dynamic>;
+              return OrderDetailScreen(orderData: orderData);
             },
           ),
         ],
