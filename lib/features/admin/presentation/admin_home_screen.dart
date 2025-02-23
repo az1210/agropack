@@ -92,10 +92,18 @@ class AdminHomeScreen extends ConsumerWidget {
             ),
             _buildCard(
               context,
-              title: 'Reports',
-              icon: Icons.bar_chart_rounded,
+              title: 'Product Received\nfrom Factory',
+              icon: Icons.archive_outlined,
               onTap: () {
-                // 5. Reports screen
+                // 4. Product Received screen
+              },
+            ),
+            _buildCard(
+              context,
+              title: 'Notice Board',
+              icon: Icons.notifications_active,
+              onTap: () {
+                context.goNamed('adminNoticeBoard');
               },
             ),
             _buildCard(

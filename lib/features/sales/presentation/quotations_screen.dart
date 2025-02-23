@@ -3,105 +3,710 @@
 // import 'package:go_router/go_router.dart';
 // import '../../../models/quotation_model.dart';
 // import '../providers/quotation_provider.dart';
-// import '../../auth/providers/auth_providers.dart'; // Exports customAuthStateProvider.
+// import '../../auth/providers/auth_providers.dart';
 
-// class QuotationScreen extends ConsumerWidget {
+// class QuotationScreen extends ConsumerStatefulWidget {
 //   const QuotationScreen({super.key});
 
 //   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     // Get the current user from the custom auth state.
+//   ConsumerState<QuotationScreen> createState() => _QuotationScreenState();
+// }
+
+// class _QuotationScreenState extends ConsumerState<QuotationScreen> {
+//   final TextEditingController _searchController = TextEditingController();
+//   String _searchQuery = '';
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _searchController.addListener(() {
+//       setState(() {
+//         _searchQuery = _searchController.text.toLowerCase();
+//       });
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _searchController.dispose();
+//     super.dispose();
+//   }
+
+//   // Filter quotations based on status and search query.
+//   List<Quotation> _filterQuotations(List<Quotation> quotations, String status) {
+//     return quotations.where((q) {
+//       final matchesStatus = q.status?.toLowerCase() == status.toLowerCase();
+//       final matchesSearch = q.companyName.toLowerCase().contains(_searchQuery);
+//       return matchesStatus && matchesSearch;
+//     }).toList();
+//   }
+
+//   Future<List<Quotation>> _fetchQuotations(String role, String userId) async {
+//     if (role == 'admin') {
+//       return await ref.read(quotationProvider.notifier).fetchAllQuotations();
+//     } else {
+//       return await ref
+//           .read(quotationProvider.notifier)
+//           .fetchQuotationsForUser(userId);
+//     }
+//   }
+
+//   Future<void> _refreshData(String role, String userId) async {
+//     setState(() {});
+//     await _fetchQuotations(role, userId);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
 //     final customUser = ref.watch(customAuthStateProvider);
 //     if (customUser == null) {
 //       return const Center(child: Text('No user logged in'));
 //     }
-//     // Check the role of the user.
-//     final String role = customUser.role;
-//     final String userId = customUser.id;
+//     final role = customUser.role;
+//     final userId = customUser.id;
 
-//     // Depending on the role, fetch quotations accordingly.
-//     final Future<List<Quotation>> quotationsFuture = role == 'admin'
-//         ? ref.read(quotationProvider.notifier).fetchAllQuotations()
-//         : ref.read(quotationProvider.notifier).fetchQuotationsForUser(userId);
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Quotations'),
-//       ),
-//       body: FutureBuilder<List<Quotation>>(
-//         future: quotationsFuture,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else {
-//             final quotations = snapshot.data ?? [];
-//             if (quotations.isEmpty) {
-//               return const Center(child: Text('No quotations available.'));
-//             }
-//             return ListView.builder(
-//               itemCount: quotations.length,
-//               itemBuilder: (context, index) {
-//                 final quotation = quotations[index];
-//                 return Card(
-//                   margin:
-//                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//                   elevation: 3,
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                   child: ListTile(
-//                     title: Text(quotation.companyName ?? 'No Company'),
-//                     subtitle: Text('Product: ${quotation.productName}'),
-//                     trailing: IconButton(
-//                       icon: const Icon(
-//                         Icons.picture_as_pdf,
-//                         color: Colors.red,
+//     return DefaultTabController(
+//       length: 2,
+//       child: Scaffold(
+//         appBar: AppBar(
+//           elevation: 0,
+//           backgroundColor: Colors.white,
+//           foregroundColor: Colors.black87,
+//           title: const Text(
+//             'Quotations',
+//             style: TextStyle(fontWeight: FontWeight.bold),
+//           ),
+//         ),
+//         floatingActionButton: FloatingActionButton(
+//           backgroundColor: Colors.blueAccent,
+//           foregroundColor: Colors.white,
+//           onPressed: () => context.goNamed('createQuotation'),
+//           child: const Icon(Icons.add),
+//         ),
+//         body: FutureBuilder<List<Quotation>>(
+//           future: _fetchQuotations(role, userId),
+//           builder: (context, snapshot) {
+//             if (snapshot.connectionState == ConnectionState.waiting) {
+//               return const Center(child: CircularProgressIndicator());
+//             } else if (snapshot.hasError) {
+//               return Center(child: Text('Error: ${snapshot.error}'));
+//             } else {
+//               final quotations = snapshot.data ?? [];
+//               return RefreshIndicator(
+//                 onRefresh: () => _refreshData(role, userId),
+//                 child: ListView(
+//                   padding: const EdgeInsets.all(16),
+//                   children: [
+//                     // Search Field with clear button.
+//                     Material(
+//                       elevation: 2,
+//                       borderRadius: BorderRadius.circular(30),
+//                       child: TextField(
+//                         controller: _searchController,
+//                         decoration: InputDecoration(
+//                           hintText: 'Search by Company Name...',
+//                           prefixIcon: const Icon(Icons.search),
+//                           suffixIcon: _searchQuery.isNotEmpty
+//                               ? IconButton(
+//                                   icon: const Icon(Icons.clear),
+//                                   onPressed: () {
+//                                     _searchController.clear();
+//                                   },
+//                                 )
+//                               : null,
+//                           border: OutlineInputBorder(
+//                             borderRadius: BorderRadius.circular(30),
+//                             borderSide: BorderSide.none,
+//                           ),
+//                           filled: true,
+//                           fillColor: Colors.white,
+//                           contentPadding: const EdgeInsets.symmetric(
+//                               horizontal: 20, vertical: 14),
+//                         ),
 //                       ),
-//                       onPressed: () {
-//                         // Implement your PDF generation/download logic here.
-//                         ScaffoldMessenger.of(context).showSnackBar(
-//                           const SnackBar(content: Text('Generating PDF...')),
-//                         );
-//                       },
 //                     ),
-//                     onTap: () {
-//                       // Navigate to the detail screen.
-//                       context.goNamed(
-//                         'quotationDetail',
-//                         pathParameters: {'id': quotation.id!},
-//                         extra: quotation,
-//                       );
-//                     },
-//                   ),
-//                 );
-//               },
-//             );
-//           }
-//         },
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: () {
-//           // Navigate to the Create Quotation screen.
-//           context.goNamed('createQuotation');
-//         },
-//         child: const Icon(Icons.add),
+//                     const SizedBox(height: 16),
+//                     // Custom TabBar with rounded indicators.
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: Colors.blueGrey[50],
+//                         borderRadius: BorderRadius.circular(30),
+//                       ),
+//                       child: TabBar(
+//                         labelStyle: TextStyle(
+//                             fontSize: 17,
+//                             fontWeight: FontWeight.w700,
+//                             letterSpacing: 0.7),
+//                         indicatorSize: TabBarIndicatorSize.tab,
+//                         indicator: const CustomTabIndicator(
+//                           color: Colors.blueAccent,
+//                           radius: 30,
+//                         ),
+//                         labelColor: Colors.white,
+//                         unselectedLabelColor: Colors.blueAccent,
+//                         tabs: const [
+//                           Tab(text: 'Pending'),
+//                           Tab(text: 'Approved'),
+//                         ],
+//                       ),
+//                     ),
+//                     const SizedBox(height: 16),
+//                     // TabBarView containing filtered quotation lists.
+//                     SizedBox(
+//                       height: MediaQuery.of(context).size.height * 0.65,
+//                       child: TabBarView(
+//                         children: [
+//                           _buildQuotationList(
+//                             _filterQuotations(
+//                               quotations,
+//                               'pending_admin_verification',
+//                             ),
+//                             isPending: true,
+//                           ),
+//                           _buildQuotationList(
+//                             _filterQuotations(quotations, 'approved'),
+//                             isPending: false,
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }
+//           },
+//         ),
 //       ),
 //     );
+//   }
+
+//   /// Builds a modern, detailed quotation card.
+//   Widget _buildQuotationList(List<Quotation> quotations,
+//       {required bool isPending}) {
+//     if (quotations.isEmpty) {
+//       return const Center(child: Text('No quotations available.'));
+//     }
+//     return ListView.separated(
+//       physics: const NeverScrollableScrollPhysics(),
+//       itemCount: quotations.length,
+//       separatorBuilder: (context, index) => const SizedBox(height: 16),
+//       itemBuilder: (context, index) {
+//         final quotation = quotations[index];
+//         return GestureDetector(
+//           onTap: () {
+//             context.goNamed(
+//               'quotationDetail',
+//               pathParameters: {'id': quotation.id!},
+//               extra: quotation,
+//             );
+//           },
+//           child: SizedBox(
+//             height: 120, // Fixed height for the card widget
+//             child: Card(
+//               elevation: 4,
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//               ),
+//               child: Container(
+//                 padding:
+//                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//                 child: Row(
+//                   children: [
+//                     // Company Avatar
+//                     CircleAvatar(
+//                       radius: 28,
+//                       backgroundColor: Colors.blueAccent,
+//                       child: Text(
+//                         quotation.companyName.substring(0, 1).toUpperCase(),
+//                         style:
+//                             const TextStyle(color: Colors.white, fontSize: 20),
+//                       ),
+//                     ),
+//                     const SizedBox(width: 12),
+//                     // Quotation Details
+//                     Expanded(
+//                       child: Column(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           Text(
+//                             quotation.companyName,
+//                             style: const TextStyle(
+//                                 fontWeight: FontWeight.bold, fontSize: 16),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           const SizedBox(height: 2),
+//                           Text(
+//                             'Product: ${quotation.items != null && quotation.items!.isNotEmpty ? quotation.items![0].productName ?? 'N/A' : 'N/A'}',
+//                             style: const TextStyle(
+//                                 fontSize: 14, color: Colors.black87),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           const SizedBox(height: 2),
+//                           Text(
+//                             'Status: ${quotation.status == 'pending_admin_verification' ? 'Pending' : 'Approved'}',
+//                             style: const TextStyle(
+//                                 fontSize: 12, color: Colors.black54),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                     // Popup menu for actions.
+//                     PopupMenuButton<String>(
+//                       onSelected: (value) async {
+//                         if (value == 'edit') {
+//                           // Handle edit action.
+//                         } else if (value == 'delete' &&
+//                             quotation.status == 'pending_admin_verification') {
+//                           final confirm = await showDialog<bool>(
+//                             context: context,
+//                             builder: (context) {
+//                               return AlertDialog(
+//                                 title: const Text('Confirm Delete'),
+//                                 content: const Text(
+//                                     'Are you sure you want to delete this quotation?'),
+//                                 actions: [
+//                                   TextButton(
+//                                     onPressed: () =>
+//                                         Navigator.pop(context, false),
+//                                     child: const Text('Cancel'),
+//                                   ),
+//                                   TextButton(
+//                                     onPressed: () =>
+//                                         Navigator.pop(context, true),
+//                                     child: const Text(
+//                                       'Delete',
+//                                       style: TextStyle(color: Colors.red),
+//                                     ),
+//                                   ),
+//                                 ],
+//                               );
+//                             },
+//                           );
+//                           if (confirm == true) {
+//                             try {
+//                               await ref
+//                                   .read(quotationProvider.notifier)
+//                                   .deleteQuotation(quotation);
+//                               ScaffoldMessenger.of(context).showSnackBar(
+//                                 const SnackBar(
+//                                     content:
+//                                         Text('Quotation deleted successfully')),
+//                               );
+//                               setState(() {});
+//                             } catch (e) {
+//                               ScaffoldMessenger.of(context).showSnackBar(
+//                                 SnackBar(content: Text('Error: $e')),
+//                               );
+//                             }
+//                           }
+//                         }
+//                       },
+//                       itemBuilder: (context) {
+//                         return [
+//                           const PopupMenuItem(
+//                             value: 'edit',
+//                             child: Text('Edit'),
+//                           ),
+//                           if (quotation.status == 'pending_admin_verification')
+//                             const PopupMenuItem(
+//                               value: 'delete',
+//                               child: Text('Delete'),
+//                             ),
+//                         ];
+//                       },
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }
+
+// /// Custom Tab Indicator that rounds the left side for the first tab
+// /// and the right side for the second tab.
+// class CustomTabIndicator extends Decoration {
+//   final Color color;
+//   final double radius;
+//   const CustomTabIndicator({required this.color, this.radius = 30});
+
+//   @override
+//   BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+//     return _CustomTabIndicatorPainter(color: color, radius: radius);
+//   }
+// }
+
+// class _CustomTabIndicatorPainter extends BoxPainter {
+//   final Color color;
+//   final double radius;
+//   _CustomTabIndicatorPainter({required this.color, required this.radius});
+
+//   @override
+//   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+//     final rect = offset & configuration.size!;
+//     RRect rrect;
+//     if (offset.dx == 0) {
+//       // First tab: round the left side.
+//       rrect = RRect.fromRectAndCorners(
+//         rect,
+//         topLeft: Radius.circular(radius),
+//         bottomLeft: Radius.circular(radius),
+//       );
+//     } else {
+//       // Second tab: round the right side.
+//       rrect = RRect.fromRectAndCorners(
+//         rect,
+//         topRight: Radius.circular(radius),
+//         bottomRight: Radius.circular(radius),
+//       );
+//     }
+//     final paint = Paint()..color = color;
+//     canvas.drawRRect(rrect, paint);
+//   }
+// }
+
+// import 'package:flutter/material.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:go_router/go_router.dart';
+// import '../../../models/quotation_model.dart';
+// import '../providers/quotation_provider.dart';
+// import '../../auth/providers/auth_providers.dart';
+
+// class QuotationScreen extends ConsumerStatefulWidget {
+//   const QuotationScreen({super.key});
+
+//   @override
+//   ConsumerState<QuotationScreen> createState() => _QuotationScreenState();
+// }
+
+// class _QuotationScreenState extends ConsumerState<QuotationScreen> {
+//   final TextEditingController _searchController = TextEditingController();
+//   String _searchQuery = '';
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _searchController.addListener(() {
+//       // Avoid unnecessary rebuilds by calling setState only when the text actually changes.
+//       if (_searchQuery != _searchController.text.toLowerCase()) {
+//         setState(() {
+//           _searchQuery = _searchController.text.toLowerCase();
+//         });
+//       }
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _searchController.dispose();
+//     super.dispose();
+//   }
+
+//   // Filter quotations based on status and search query.
+//   List<Quotation> _filterQuotations(List<Quotation> quotations, String status) {
+//     return quotations.where((q) {
+//       final matchesStatus = q.status?.toLowerCase() == status.toLowerCase();
+//       final matchesSearch = q.companyName.toLowerCase().contains(_searchQuery);
+//       return matchesStatus && matchesSearch;
+//     }).toList();
+//   }
+
+//   Future<List<Quotation>> _fetchQuotations(String role, String userId) async {
+//     if (role == 'admin') {
+//       return await ref.read(quotationProvider.notifier).fetchAllQuotations();
+//     } else {
+//       return await ref
+//           .read(quotationProvider.notifier)
+//           .fetchQuotationsForUser(userId);
+//     }
+//   }
+
+//   Future<void> _refreshData(String role, String userId) async {
+//     setState(() {});
+//     await _fetchQuotations(role, userId);
+//   }
+
+//   /// Build the search field widget, placed at the top of the screen.
+//   Widget _buildSearchField() {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//       child: Material(
+//         elevation: 2,
+//         borderRadius: BorderRadius.circular(30),
+//         child: TextField(
+//           controller: _searchController,
+//           decoration: InputDecoration(
+//             hintText: 'Search by Company Name...',
+//             prefixIcon: const Icon(Icons.search),
+//             suffixIcon: _searchQuery.isNotEmpty
+//                 ? IconButton(
+//                     icon: const Icon(Icons.clear),
+//                     onPressed: () => _searchController.clear(),
+//                   )
+//                 : null,
+//             border: OutlineInputBorder(
+//               borderRadius: BorderRadius.circular(30),
+//               borderSide: BorderSide.none,
+//             ),
+//             filled: true,
+//             fillColor: Colors.white,
+//             contentPadding:
+//                 const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   /// Builds a list of quotation cards for a given status.
+//   Widget _buildQuotationList(List<Quotation> quotations,
+//       {required bool isPending}) {
+//     if (quotations.isEmpty) {
+//       return const Center(child: Text('No quotations available.'));
+//     }
+//     return ListView.separated(
+//       physics: const NeverScrollableScrollPhysics(),
+//       shrinkWrap: true,
+//       itemCount: quotations.length,
+//       separatorBuilder: (context, index) => const SizedBox(height: 16),
+//       itemBuilder: (context, index) {
+//         final quotation = quotations[index];
+//         return GestureDetector(
+//           onTap: () {
+//             context.goNamed(
+//               'quotationDetail',
+//               pathParameters: {'id': quotation.id!},
+//               extra: quotation,
+//             );
+//           },
+//           child: SizedBox(
+//             height: 120, // Fixed height for the card widget.
+//             child: Card(
+//               elevation: 4,
+//               shape: RoundedRectangleBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//               ),
+//               child: Container(
+//                 padding:
+//                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//                 child: Row(
+//                   children: [
+//                     // Company Avatar
+//                     CircleAvatar(
+//                       radius: 28,
+//                       backgroundColor: Colors.blueAccent,
+//                       child: Text(
+//                         quotation.companyName.substring(0, 1).toUpperCase(),
+//                         style:
+//                             const TextStyle(color: Colors.white, fontSize: 20),
+//                       ),
+//                     ),
+//                     const SizedBox(width: 12),
+//                     // Quotation Details
+//                     Expanded(
+//                       child: Column(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           Text(
+//                             quotation.companyName,
+//                             style: const TextStyle(
+//                                 fontWeight: FontWeight.bold, fontSize: 16),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           const SizedBox(height: 2),
+//                           Text(
+//                             'Product: ${quotation.items != null && quotation.items!.isNotEmpty ? quotation.items![0].productName ?? 'N/A' : 'N/A'}',
+//                             style: const TextStyle(
+//                                 fontSize: 14, color: Colors.black87),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           const SizedBox(height: 2),
+//                           Text(
+//                             'Status: ${quotation.status == 'pending_admin_verification' ? 'Pending' : 'Approved'}',
+//                             style: const TextStyle(
+//                                 fontSize: 12, color: Colors.black54),
+//                             maxLines: 1,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final customUser = ref.watch(customAuthStateProvider);
+//     if (customUser == null) {
+//       return const Center(child: Text('No user logged in'));
+//     }
+//     final role = customUser.role;
+//     final userId = customUser.id;
+
+//     return DefaultTabController(
+//       length: 2,
+//       child: Scaffold(
+//         appBar: AppBar(
+//           elevation: 0,
+//           backgroundColor: Colors.white,
+//           foregroundColor: Colors.black87,
+//           title: const Text(
+//             'Quotations',
+//             style: TextStyle(fontWeight: FontWeight.bold),
+//           ),
+//         ),
+//         floatingActionButton: FloatingActionButton(
+//           backgroundColor: Colors.blueAccent,
+//           foregroundColor: Colors.white,
+//           onPressed: () => context.goNamed('createQuotation'),
+//           child: const Icon(Icons.add),
+//         ),
+//         body: Column(
+//           children: [
+//             // Place the search field at the top.
+//             _buildSearchField(),
+//             Expanded(
+//               child: FutureBuilder<List<Quotation>>(
+//                 future: _fetchQuotations(role, userId),
+//                 builder: (context, snapshot) {
+//                   if (snapshot.connectionState == ConnectionState.waiting) {
+//                     return const Center(child: CircularProgressIndicator());
+//                   } else if (snapshot.hasError) {
+//                     return Center(child: Text('Error: ${snapshot.error}'));
+//                   } else {
+//                     final quotations = snapshot.data ?? [];
+//                     return RefreshIndicator(
+//                       onRefresh: () => _refreshData(role, userId),
+//                       child: ListView(
+//                         padding: const EdgeInsets.all(16),
+//                         children: [
+//                           // Custom TabBar with rounded indicators.
+//                           Container(
+//                             decoration: BoxDecoration(
+//                               color: Colors.blueGrey[50],
+//                               borderRadius: BorderRadius.circular(30),
+//                             ),
+//                             child: TabBar(
+//                               labelStyle: const TextStyle(
+//                                   fontSize: 17,
+//                                   fontWeight: FontWeight.w700,
+//                                   letterSpacing: 0.7),
+//                               indicatorSize: TabBarIndicatorSize.tab,
+//                               indicator: const CustomTabIndicator(
+//                                 color: Colors.blueAccent,
+//                                 radius: 30,
+//                               ),
+//                               labelColor: Colors.white,
+//                               unselectedLabelColor: Colors.blueAccent,
+//                               tabs: const [
+//                                 Tab(text: 'Pending'),
+//                                 Tab(text: 'Approved'),
+//                               ],
+//                             ),
+//                           ),
+//                           const SizedBox(height: 16),
+//                           // TabBarView containing filtered quotation lists.
+//                           SizedBox(
+//                             height: MediaQuery.of(context).size.height * 0.65,
+//                             child: TabBarView(
+//                               children: [
+//                                 _buildQuotationList(
+//                                   _filterQuotations(
+//                                     quotations,
+//                                     'pending_admin_verification',
+//                                   ),
+//                                   isPending: true,
+//                                 ),
+//                                 _buildQuotationList(
+//                                   _filterQuotations(quotations, 'approved'),
+//                                   isPending: false,
+//                                 ),
+//                               ],
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     );
+//                   }
+//                 },
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// /// Custom Tab Indicator that rounds the left side for the first tab
+// /// and the right side for the second tab.
+// class CustomTabIndicator extends Decoration {
+//   final Color color;
+//   final double radius;
+//   const CustomTabIndicator({required this.color, this.radius = 30});
+
+//   @override
+//   BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+//     return _CustomTabIndicatorPainter(color: color, radius: radius);
+//   }
+// }
+
+// class _CustomTabIndicatorPainter extends BoxPainter {
+//   final Color color;
+//   final double radius;
+//   _CustomTabIndicatorPainter({required this.color, required this.radius});
+
+//   @override
+//   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+//     final rect = offset & configuration.size!;
+//     RRect rrect;
+//     if (offset.dx == 0) {
+//       // First tab: round the left side.
+//       rrect = RRect.fromRectAndCorners(
+//         rect,
+//         topLeft: Radius.circular(radius),
+//         bottomLeft: Radius.circular(radius),
+//       );
+//     } else {
+//       // Second tab: round the right side.
+//       rrect = RRect.fromRectAndCorners(
+//         rect,
+//         topRight: Radius.circular(radius),
+//         bottomRight: Radius.circular(radius),
+//       );
+//     }
+//     final paint = Paint()..color = color;
+//     canvas.drawRRect(rrect, paint);
 //   }
 // }
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../models/quotation_model.dart';
 import '../providers/quotation_provider.dart';
-import '../../auth/providers/auth_providers.dart'; // Exports customAuthStateProvider
+import '../../auth/providers/auth_providers.dart';
 
 class QuotationScreen extends ConsumerStatefulWidget {
-  const QuotationScreen({Key? key}) : super(key: key);
+  const QuotationScreen({super.key});
 
   @override
   ConsumerState<QuotationScreen> createState() => _QuotationScreenState();
@@ -115,9 +720,13 @@ class _QuotationScreenState extends ConsumerState<QuotationScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.toLowerCase();
-      });
+      // Avoid unnecessary rebuilds by calling setState only when text actually changes.
+      final newQuery = _searchController.text.toLowerCase();
+      if (_searchQuery != newQuery) {
+        setState(() {
+          _searchQuery = newQuery;
+        });
+      }
     });
   }
 
@@ -127,12 +736,11 @@ class _QuotationScreenState extends ConsumerState<QuotationScreen> {
     super.dispose();
   }
 
-  // Helper method to filter quotations based on status and search query.
+  // Filter quotations based on status and search query.
   List<Quotation> _filterQuotations(List<Quotation> quotations, String status) {
     return quotations.where((q) {
       final matchesStatus = q.status?.toLowerCase() == status.toLowerCase();
-      final matchesSearch =
-          q.companyName?.toLowerCase().contains(_searchQuery) ?? false;
+      final matchesSearch = q.companyName.toLowerCase().contains(_searchQuery);
       return matchesStatus && matchesSearch;
     }).toList();
   }
@@ -147,9 +755,200 @@ class _QuotationScreenState extends ConsumerState<QuotationScreen> {
     }
   }
 
+  Future<void> _refreshData(String role, String userId) async {
+    setState(() {});
+    await _fetchQuotations(role, userId);
+  }
+
+  /// Build the search field widget, placed at the top of the screen.
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Material(
+        elevation: 2,
+        borderRadius: BorderRadius.circular(30),
+        child: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Search by Company Name...',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => _searchController.clear(),
+                  )
+                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds a list of quotation cards for a given status.
+  Widget _buildQuotationList(List<Quotation> quotations,
+      {required bool isPending}) {
+    if (quotations.isEmpty) {
+      return const Center(child: Text('No quotations available.'));
+    }
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: quotations.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final quotation = quotations[index];
+        return GestureDetector(
+          onTap: () {
+            context.goNamed(
+              'quotationDetail',
+              pathParameters: {'id': quotation.id!},
+              extra: quotation,
+            );
+          },
+          child: SizedBox(
+            height: 120, // Fixed height for the card widget.
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  children: [
+                    // Company Avatar.
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.blueAccent,
+                      child: Text(
+                        quotation.companyName.substring(0, 1).toUpperCase(),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Quotation Details.
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            quotation.companyName,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Product: ${quotation.items != null && quotation.items!.isNotEmpty ? quotation.items![0].productName ?? 'N/A' : 'N/A'}',
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Status: ${quotation.status == 'pending_admin_verification' ? 'Pending' : 'Approved'}',
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.black54),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Popup menu for edit and delete actions.
+                    PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        if (value == 'edit') {
+                          // Navigate to edit screen.
+                          context.goNamed(
+                            'editQuotation',
+                            pathParameters: {'id': quotation.id!},
+                            extra: quotation,
+                          );
+                        } else if (value == 'delete' &&
+                            quotation.status == 'pending_admin_verification') {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Confirm Delete'),
+                                content: const Text(
+                                    'Are you sure you want to delete this quotation?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          if (confirm == true) {
+                            try {
+                              await ref
+                                  .read(quotationProvider.notifier)
+                                  .deleteQuotation(quotation);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    backgroundColor: Colors.grey,
+                                    content:
+                                        Text('Quotation deleted successfully')),
+                              );
+                              setState(() {});
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Edit'),
+                        ),
+                        if (quotation.status == 'pending_admin_verification')
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Read current custom user.
     final customUser = ref.watch(customAuthStateProvider);
     if (customUser == null) {
       return const Center(child: Text('No user logged in'));
@@ -161,183 +960,135 @@ class _QuotationScreenState extends ConsumerState<QuotationScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Quotations'),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(110),
-            child: Column(
-              children: [
-                // Rounded search box.
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search by Company Name...',
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ),
-                // Tabs for Pending and Approved.
-                const TabBar(
-                  indicatorColor: Colors.white,
-                  tabs: [
-                    Tab(text: 'Pending'),
-                    Tab(text: 'Approved'),
-                  ],
-                ),
-              ],
-            ),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          title: const Text(
+            'Quotations',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () async {
-                // Call your sign-out function (ensure it's implemented properly)
-                await signOutUser(ref);
-                context.goNamed('login');
-              },
-            ),
-          ],
-        ),
-        body: FutureBuilder<List<Quotation>>(
-          future: _fetchQuotations(role, userId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              final quotations = snapshot.data ?? [];
-              // Wrap in TabBarView to show different filtered lists.
-              return TabBarView(
-                children: [
-                  // Pending quotations
-                  _buildQuotationList(
-                    _filterQuotations(quotations, 'pending_admin_verification'),
-                    isPending: true,
-                  ),
-                  // Approved quotations
-                  _buildQuotationList(
-                    _filterQuotations(quotations, 'approved'),
-                    isPending: false,
-                  ),
-                ],
-              );
-            }
-          },
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // Navigate to the Create Quotation screen.
-            context.goNamed('createQuotation');
-          },
+          backgroundColor: Colors.blueAccent,
+          foregroundColor: Colors.white,
+          onPressed: () => context.goNamed('createQuotation'),
           child: const Icon(Icons.add),
+        ),
+        body: Column(
+          children: [
+            // Place the search field at the top.
+            _buildSearchField(),
+            Expanded(
+              child: FutureBuilder<List<Quotation>>(
+                future: _fetchQuotations(role, userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                    final quotations = snapshot.data ?? [];
+                    return RefreshIndicator(
+                      onRefresh: () => _refreshData(role, userId),
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          // Custom TabBar with rounded indicators.
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey[50],
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: TabBar(
+                              labelStyle: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.7),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              indicator: const CustomTabIndicator(
+                                color: Colors.blueAccent,
+                                radius: 30,
+                              ),
+                              labelColor: Colors.white,
+                              unselectedLabelColor: Colors.blueAccent,
+                              tabs: const [
+                                Tab(text: 'Pending'),
+                                Tab(text: 'Approved'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // TabBarView containing filtered quotation lists.
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.65,
+                            child: TabBarView(
+                              children: [
+                                _buildQuotationList(
+                                  _filterQuotations(
+                                    quotations,
+                                    'pending_admin_verification',
+                                  ),
+                                  isPending: true,
+                                ),
+                                _buildQuotationList(
+                                  _filterQuotations(quotations, 'approved'),
+                                  isPending: false,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildQuotationList(List<Quotation> quotations,
-      {required bool isPending}) {
-    if (quotations.isEmpty) {
-      return const Center(child: Text('No quotations available.'));
+/// Custom Tab Indicator that rounds the left side for the first tab
+/// and the right side for the second tab.
+class CustomTabIndicator extends Decoration {
+  final Color color;
+  final double radius;
+  const CustomTabIndicator({required this.color, this.radius = 30});
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    return _CustomTabIndicatorPainter(color: color, radius: radius);
+  }
+}
+
+class _CustomTabIndicatorPainter extends BoxPainter {
+  final Color color;
+  final double radius;
+  _CustomTabIndicatorPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final rect = offset & configuration.size!;
+    RRect rrect;
+    if (offset.dx == 0) {
+      // First tab: round the left side.
+      rrect = RRect.fromRectAndCorners(
+        rect,
+        topLeft: Radius.circular(radius),
+        bottomLeft: Radius.circular(radius),
+      );
+    } else {
+      // Second tab: round the right side.
+      rrect = RRect.fromRectAndCorners(
+        rect,
+        topRight: Radius.circular(radius),
+        bottomRight: Radius.circular(radius),
+      );
     }
-    return ListView.builder(
-      itemCount: quotations.length,
-      itemBuilder: (context, index) {
-        final quotation = quotations[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            title: Text(quotation.companyName ?? 'No Company'),
-            subtitle: Text(
-                'Product: ${quotation.items != null && quotation.items!.isNotEmpty ? quotation.items![0].productName ?? 'N/A' : 'N/A'}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isPending)
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      // Confirm deletion before calling delete.
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Confirm Delete'),
-                            content: const Text(
-                                'Are you sure you want to delete this quotation?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (confirm == true) {
-                        try {
-                          await ref
-                              .read(quotationProvider.notifier)
-                              .deleteQuotation(quotation);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Quotation deleted successfully')),
-                          );
-                          // Force a rebuild by calling setState if needed.
-                          setState(() {});
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.picture_as_pdf,
-                    color: Colors.red,
-                  ),
-                  onPressed: () {
-                    // Implement PDF generation/download logic.
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Generating PDF...')),
-                    );
-                  },
-                ),
-              ],
-            ),
-            onTap: () {
-              // Navigate to the quotation detail screen.
-              context.goNamed(
-                'quotationDetail',
-                pathParameters: {'id': quotation.id!},
-                extra: quotation,
-              );
-            },
-          ),
-        );
-      },
-    );
+    final paint = Paint()..color = color;
+    canvas.drawRRect(rrect, paint);
   }
 }
