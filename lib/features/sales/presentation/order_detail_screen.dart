@@ -308,6 +308,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:go_router/go_router.dart';
 
+import '../../auth/providers/auth_providers.dart';
+
 class OrderDetailScreen extends ConsumerWidget {
   final Map<String, dynamic> orderData;
 
@@ -473,6 +475,8 @@ class OrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(customAuthStateProvider);
+    final bool isAdmin = currentUser != null && currentUser.role == 'admin';
     final String orderId = orderData['orderId'] ?? 'N/A';
     final Timestamp? ts = orderData['createdAt'] as Timestamp?;
     final DateTime? createdAt = ts?.toDate();
@@ -490,7 +494,11 @@ class OrderDetailScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.goNamed('orders');
+            if (isAdmin) {
+              context.goNamed('adminOrders');
+            } else {
+              context.goNamed('orders');
+            }
           },
         ),
       ),
@@ -587,11 +595,16 @@ class OrderDetailScreen extends ConsumerWidget {
                                     content: Text("Payment action triggered")));
                           }),
                           _buildActionButton(
-                              context, Icons.local_shipping, "Shipped", () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Shipped action triggered")));
-                          }),
+                            context,
+                            Icons.local_shipping,
+                            "Shipped",
+                            () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text("Shipped action triggered")));
+                            },
+                          ),
                           _buildActionButton(context, Icons.delivery_dining,
                               "Partial Delivered", () {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -606,14 +619,27 @@ class OrderDetailScreen extends ConsumerWidget {
                                     content:
                                         Text("Delivered action triggered")));
                           }),
-                          _buildActionButton(context, Icons.download, "Challan",
-                              () async {
-                            await _downloadChallan(context);
-                          }),
-                          _buildActionButton(context, Icons.download, "Bill",
-                              () async {
-                            await _downloadBill(context);
-                          }),
+                          _buildActionButton(
+                            context,
+                            Icons.download,
+                            "Challan",
+                            () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text("Challan action triggered")));
+                            },
+                          ),
+                          _buildActionButton(
+                            context,
+                            Icons.download,
+                            "Bill",
+                            () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Bill action triggered")));
+                            },
+                          ),
                         ],
                       ),
                     ],

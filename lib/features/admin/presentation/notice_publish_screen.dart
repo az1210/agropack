@@ -123,7 +123,7 @@ class _AdminNoticePublishScreenState
     final usersAsyncValue = ref.watch(allUsersProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Publish Notice"),
+        title: const Text("Notice Publish"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -185,11 +185,20 @@ class _AdminNoticePublishScreenState
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _publishNotice,
-                        child: const Text("Publish Notice"),
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 56, 112, 207),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          "Create Notice",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
                           ),
                         ),
                       ),

@@ -43,7 +43,8 @@
 class UserModel {
   final String id;
   final String email;
-  final String role; // admin, sales, client
+  final String role;
+  final String? zone; // admin, sales, client
   final String? name;
   final String? phone;
   final String password;
@@ -52,6 +53,7 @@ class UserModel {
     required this.id,
     required this.email,
     required this.role,
+    this.zone,
     this.name,
     this.phone,
     required this.password,
@@ -62,6 +64,7 @@ class UserModel {
       'id': id,
       'email': email,
       'role': role,
+      'zone': zone,
       'name': name,
       'password': password,
       'phone': phone,
@@ -70,9 +73,10 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'] ?? '', // ensures a String is returned even if null
+      id: map['id'] ?? '',
       email: map['email'] ?? '',
       role: map['role'] ?? '',
+      zone: map['zone'] ?? '',
       name: map['name'] ?? '',
       password: map['password'] ?? '',
       phone: map['phone'] ?? '',

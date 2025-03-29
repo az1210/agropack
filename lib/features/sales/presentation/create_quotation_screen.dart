@@ -163,7 +163,7 @@ class _CreateQuotationScreenState extends ConsumerState<CreateQuotationScreen> {
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Navigator.of(context).canPop()) {
-          context.goNamed('quotations');
+          context.pop();
         }
       });
     } catch (e) {
@@ -397,13 +397,20 @@ class _CreateQuotationScreenState extends ConsumerState<CreateQuotationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final customUser = ref.watch(customAuthStateProvider);
+    final role = customUser?.role;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Quotation'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.goNamed('quotations');
+            if (role == 'admin') {
+              context.goNamed('adminQuotations');
+            } else if (role == 'sales') {
+              context.goNamed('quotations');
+            }
           },
         ),
       ),

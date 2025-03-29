@@ -200,21 +200,21 @@ class SalesHomeScreen extends ConsumerWidget {
               icon: Icons.payment,
               title: 'Payments',
               color: Colors.green,
-              onTap: () => context.goNamed('payments'),
+              onTap: () => context.goNamed('userPaymentList'),
             ),
-            _buildGridCard(
-              context,
-              icon: Icons.local_shipping,
-              title: 'Delivered',
-              color: Colors.purple,
-              onTap: () => context.goNamed('delivered'),
-            ),
+            // _buildGridCard(
+            //   context,
+            //   icon: Icons.local_shipping,
+            //   title: 'Delivered',
+            //   color: Colors.purple,
+            //   onTap: () => context.goNamed('delivered'),
+            // ),
             _buildGridCard(
               context,
               icon: Icons.bar_chart,
               title: 'Reports',
               color: Colors.red,
-              onTap: () => context.goNamed('reports'),
+              onTap: () => context.goNamed('userReports'),
             ),
             _buildGridCard(
               context,
@@ -229,12 +229,10 @@ class SalesHomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Builds a custom App Drawer with a colorful header, welcome message, and sign out option.
   Widget _buildAppDrawer(BuildContext context, WidgetRef ref, String userName) {
     return Drawer(
       child: Column(
         children: [
-          // A header with gradient background, avatar, and welcome message.
           UserAccountsDrawerHeader(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -253,27 +251,13 @@ class SalesHomeScreen extends ConsumerWidget {
               child: Icon(Icons.person, size: 40, color: Colors.blue.shade700),
             ),
           ),
-          // Additional drawer items
-
-          ListTile(
-            leading: const Icon(Icons.list_alt, color: Colors.black54),
-            trailing: const Icon(Icons.add, color: Colors.black87),
-            title: const Text("Add Quotation"),
-            onTap: () {
-              context.goNamed("createQuotation");
-              // Add navigation to About page if needed.
-            },
-          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.info_outline, color: Colors.black54),
             title: const Text("About"),
-            onTap: () {
-              // Add navigation to About page if needed.
-            },
+            onTap: () {},
           ),
           const Divider(),
-          // Sign Out option with confirmation dialog.
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text("Sign Out"),
@@ -284,7 +268,6 @@ class SalesHomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Displays a confirmation dialog before signing out.
   void _showSignOutConfirmationDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -316,7 +299,6 @@ class SalesHomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Builds a modern grid card with a gradient background, icon, and label.
   Widget _buildGridCard(
     BuildContext context, {
     required IconData icon,

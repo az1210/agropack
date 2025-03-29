@@ -61,6 +61,8 @@
 // }
 
 import 'dart:convert';
+import 'package:agro_packaging/models/payment_model.dart';
+import 'package:agro_packaging/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'quotation_model.dart';
 import 'notice_model.dart'; // Import your Notice model
@@ -90,6 +92,32 @@ class MyExtraCodec extends Codec<Object?, Object?> {
   Converter<Object?, Object?> get decoder => const _MyExtraDecoder();
 }
 
+// class _MyExtraEncoder extends Converter<Object?, Object?> {
+//   const _MyExtraEncoder();
+
+//   @override
+//   Object? convert(Object? input) {
+//     if (input == null) return null;
+//     if (input is Quotation) {
+//       final map = input.toMap();
+//       if (input.id != null) {
+//         map['id'] = input.id;
+//       }
+//       final safeMap = convertTimestamps(map) as Map<String, dynamic>;
+//       return ['Quotation', safeMap];
+//     }
+//     if (input is Notice) {
+//       final map = input.toMap();
+//       if (input.id != null) {
+//         map['id'] = input.id;
+//       }
+//       final safeMap = convertTimestamps(map) as Map<String, dynamic>;
+//       return ['Notice', safeMap];
+//     }
+//     throw FormatException('Cannot encode type: ${input.runtimeType}');
+//   }
+// }
+
 class _MyExtraEncoder extends Converter<Object?, Object?> {
   const _MyExtraEncoder();
 
@@ -111,6 +139,20 @@ class _MyExtraEncoder extends Converter<Object?, Object?> {
       }
       final safeMap = convertTimestamps(map) as Map<String, dynamic>;
       return ['Notice', safeMap];
+    }
+    if (input is UserModel) {
+      final map = input.toMap();
+      final safeMap = convertTimestamps(map) as Map<String, dynamic>;
+      return ['UserModel', safeMap];
+    }
+    if (input is PaymentModel) {
+      final map = input.toMap();
+      final safeMap = convertTimestamps(map) as Map<String, dynamic>;
+      return ['PaymentModel', safeMap];
+    }
+    // NEW: For plain maps, convert any Timestamps.
+    if (input is Map<String, dynamic>) {
+      return convertTimestamps(input);
     }
     throw FormatException('Cannot encode type: ${input.runtimeType}');
   }

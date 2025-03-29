@@ -142,7 +142,7 @@ class NoticeBoardScreen extends ConsumerWidget {
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
@@ -159,6 +159,7 @@ class NoticeBoardScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                             // Notice content snippet with highlight
                             Container(
+                              height: 70,
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Theme.of(context)

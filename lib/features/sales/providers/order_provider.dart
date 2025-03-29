@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../models/quotation_model.dart';
 
 final orderProvider = ChangeNotifierProvider<OrderController>((ref) {
@@ -23,33 +24,27 @@ class OrderController extends ChangeNotifier {
       errorMessage = '';
       notifyListeners();
 
-      // Create a new order document in the "orders" collection.
       final orderDocRef = _firestore.collection('orders').doc();
       final String orderId = orderDocRef.id;
       final DateTime currentDateTime = DateTime.now();
 
-      // Prepare the quotation data.
-      // Override its status to "confirmed_order" so that in the order document it won't be "pending_for_verification".
       final Map<String, dynamic> quotationData = quotation.toMap();
       quotationData['status'] = 'confirmed_order';
 
-      // Prepare the order document data.
       final orderData = {
         'orderId': orderId,
         'createdAt': Timestamp.fromDate(currentDateTime),
-        'createdBy': quotation.createdByUid, // current user's id
+        'createdBy': quotation.createdByUid,
         'quotation': quotationData,
       };
 
-      // Save the new order document.
       await orderDocRef.set(orderData);
 
-      // Update the original quotation's status to "confirmed_order".
       await _firestore.collection('quotations').doc(quotation.id).update({
         'status': 'confirmed_order',
       });
 
-      Navigator.of(context).pop();
+      context.pop();
     } catch (e) {
       errorMessage = e.toString();
     } finally {
@@ -58,13 +53,9 @@ class OrderController extends ChangeNotifier {
     }
   }
 
-  /// Fetch orders from the "orders" collection.
-  /// - Orders are sorted in descending order of creation date (last confirmed orders at top).
-  /// - For non-admin users, only orders confirmed by that user (matching the "createdBy" field) are returned.
   Future<List<Map<String, dynamic>>> fetchOrders(String userId,
       {bool isAdmin = false}) async {
     try {
-      // Delay state modification until after the current build completes.
       Future.microtask(() {
         isLoading = true;
         notifyListeners();
@@ -74,7 +65,6 @@ class OrderController extends ChangeNotifier {
           .collection('orders')
           .orderBy('createdAt', descending: true);
 
-      // For non-admin users, filter by the current user's id.
       if (!isAdmin) {
         query = query.where('createdBy', isEqualTo: userId);
         debugPrint("Fetching orders for user: $userId");

@@ -68,24 +68,29 @@ class QuotationController extends ChangeNotifier {
 
   /// Fetch all quotations (for admin users).
   Future<List<Quotation>> fetchAllQuotations() async {
-    try {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       isLoading = true;
       notifyListeners();
+    });
 
+    try {
       final snapshot = await _firestore.collection('quotations').get();
-      // return snapshot.docs.map((doc) => Quotation.fromDoc(doc)).toList();
       return snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id;
         return Quotation.fromMap(data);
       }).toList();
     } catch (e) {
-      errorMessage = e.toString();
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        errorMessage = e.toString();
+        notifyListeners();
+      });
       return [];
     } finally {
-      isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        isLoading = false;
+        notifyListeners();
+      });
     }
   }
 

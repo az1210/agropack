@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../models/notice_model.dart';
-import '../../../models/user.dart';
 import '../../../common/providers/notice_provider.dart';
-import './notice_publish_screen.dart';
-import '../../sales/presentation/notice_detail_screen.dart';
 
 class AdminNoticeBoardScreen extends ConsumerWidget {
   const AdminNoticeBoardScreen({super.key});
@@ -19,7 +15,11 @@ class AdminNoticeBoardScreen extends ConsumerWidget {
         title: const Text("Admin Notice Board"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(
+              Icons.add_outlined,
+              color: Color.fromARGB(255, 56, 112, 207),
+              size: 28,
+            ),
             onPressed: () {
               context.goNamed('adminPublishNotice');
             },
@@ -108,144 +108,144 @@ class AdminNoticeBoardScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         context.goNamed(
-                          'noticeDetail',
+                          'adminNoticeDetail',
                           pathParameters: {'id': notice.id!},
                           extra: notice,
                         );
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Notice details
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  notice.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  DateFormat.yMMMd()
-                                      .add_jm()
-                                      .format(notice.createdAt),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: Colors.white70),
-                                ),
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    notice.content,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                    maxLines: 3,
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Notice details
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    notice.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                targetedUsersWidget,
-                              ],
-                            ),
-                            // Action Icons Row using Wrap to handle potential overflow
-                            Wrap(
-                              spacing: 4,
-                              runSpacing: 4,
-                              alignment: WrapAlignment.end,
-                              children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.white, size: 20),
-                                  onPressed: () async {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: const Text('Confirm Delete'),
-                                          content: const Text(
-                                            'Are you sure you want to delete this notice?',
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    DateFormat.yMMMd()
+                                        .add_jm()
+                                        .format(notice.createdAt),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: Colors.white70),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      notice.content,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text('Cancel'),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  targetedUsersWidget,
+                                ],
+                              ),
+                              // Action Icons Row using Wrap to handle potential overflow
+                              Wrap(
+                                spacing: 4,
+                                runSpacing: 4,
+                                alignment: WrapAlignment.end,
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.white, size: 20),
+                                    onPressed: () async {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('Confirm Delete'),
+                                            content: const Text(
+                                              'Are you sure you want to delete this notice?',
                                             ),
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              child: const Text(
-                                                'Delete',
-                                                style: TextStyle(
-                                                    color: Colors.red),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, false),
+                                                child: const Text('Cancel'),
                                               ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                    if (confirm == true) {
-                                      try {
-                                        await ref
-                                            .read(noticeProvider.notifier)
-                                            .deleteNotice(notice);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Notice deleted successfully')),
-                                        );
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(content: Text('Error: $e')),
-                                        );
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, true),
+                                                child: const Text(
+                                                  'Delete',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                      if (confirm == true) {
+                                        try {
+                                          await ref
+                                              .read(noticeProvider.notifier)
+                                              .deleteNotice(notice);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'Notice deleted successfully')),
+                                          );
+                                        } catch (e) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text('Error: $e')),
+                                          );
+                                        }
                                       }
-                                    }
-                                  },
-                                ),
-                                SizedBox(
-                                  width: 35,
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.arrow_forward,
-                                      color: Colors.white, size: 20),
-                                  onPressed: () {
-                                    context.goNamed(
-                                      'noticeDetail',
-                                      pathParameters: {'id': notice.id!},
-                                      extra: notice,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
+                                    },
+                                  ),
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    icon: const Icon(Icons.arrow_forward,
+                                        color: Colors.white, size: 20),
+                                    onPressed: () {
+                                      context.goNamed(
+                                        'noticeDetail',
+                                        pathParameters: {'id': notice.id!},
+                                        extra: notice,
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

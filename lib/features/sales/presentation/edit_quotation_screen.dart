@@ -366,13 +366,19 @@ class _EditQuotationScreenState extends ConsumerState<EditQuotationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final customUser = ref.watch(customAuthStateProvider);
+    final role = customUser?.role;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Quotation'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.goNamed('quotations');
+            if (role == 'admin') {
+              context.goNamed('adminQuotations');
+            } else {
+              context.goNamed('quotations');
+            }
           },
         ),
       ),
@@ -428,7 +434,7 @@ class _EditQuotationScreenState extends ConsumerState<EditQuotationScreen> {
                               borderRadius: BorderRadius.circular(30)),
                         ),
                         child: const Text(
-                          'Submit Quotation',
+                          'Update Quotation',
                           style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,

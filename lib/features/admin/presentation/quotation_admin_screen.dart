@@ -36,7 +36,7 @@ class QuotationAdminScreen extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final quote = pending[index];
                     return ListTile(
-                      title: Text(quote.companyName ?? 'No Company'),
+                      title: Text(quote.companyName),
                       subtitle: Text('Status: ${quote.status}'),
                       onTap: () {
                         // Navigate to an editing screen
